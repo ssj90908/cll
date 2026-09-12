@@ -1,186 +1,446 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>加入群聊</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000000;
-        }
-        iframe {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-        }
-        
-        .pulse-container {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 300px;
-            text-align: center;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-        }
-        
-        .pulse-animation {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .pulse-circle {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.8) 0%, transparent 70%);
-            animation: pulse-expand 2s infinite ease-out;
-        }
-        
-        .pulse-circle:nth-child(1) {
-            animation-delay: 0s;
-        }
-        
-        .pulse-circle:nth-child(2) {
-            animation-delay: 0.5s;
-        }
-        
-        .pulse-circle:nth-child(3) {
-            animation-delay: 1s;
-        }
-        
-        @keyframes pulse-expand {
-            0% {
-                transform: scale(0.3);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-        }
-        
-        .core-pulse {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: #00ffff;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px #00ffff,
-                        0 0 40px #00ffff,
-                        0 0 60px #00ffff;
-            animation: core-pulse 1.5s infinite ease-in-out;
-        }
-        
-        @keyframes core-pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.2); }
-        }
-        
-        .loading-text {
-            font-size: 22px;
-            color: #ffffff;
-            font-weight: 500;
-            letter-spacing: 1px;
-            margin-top: 15px;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
-        }
-        
-        .loading-dots {
-            display: inline-block;
-            animation: dots 1.5s infinite;
-        }
-        
-        @keyframes dots {
-            0% { content: '.'; }
-            33% { content: '..'; }
-            66% { content: '...'; }
-            100% { content: '....'; }
-        }
-        
-        .light-beam {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.2) 0%, transparent 70%);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: light-rotate 10s infinite linear;
-        }
-        
-        @keyframes light-rotate {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>心动盲盒 · 缘分抽签</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'PingFang SC','Microsoft YaHei',sans-serif; -webkit-tap-highlight-color:transparent; }
+body { background:linear-gradient(135deg,#ff9a9e 0%,#fad0c4 50%,#ffd1ff 100%); min-height:100vh; padding:16px; color:#333; }
+.container { max-width:500px; margin:0 auto; }
+header { text-align:center; padding:26px 0 16px; }
+header h1 { font-size:26px; color:#ff4756; margin-bottom:6px; text-shadow:0 2px 4px rgba(0,0,0,.08); }
+header p { color:#777; font-size:13px; }
+.tab-bar { display:flex; background:#fff; border-radius:12px; overflow:hidden; margin:16px 0; box-shadow:0 4px 15px rgba(0,0,0,.08); }
+.tab-bar button { flex:1; padding:13px 0; border:none; background:none; font-size:15px; font-weight:bold; cursor:pointer; transition:.3s; color:#999; }
+.tab-bar button.active { background:#ff4756; color:#fff; }
+.card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 4px 20px rgba(0,0,0,.07); margin-bottom:18px; animation:fadeIn .3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.card h3 { margin-bottom:18px; color:#ff4756; font-size:17px; }
+.form-group { margin-bottom:16px; }
+.form-group > label { display:block; margin-bottom:7px; font-size:13px; color:#555; font-weight:bold; }
+.form-group input[type=text], .form-group textarea { width:100%; padding:11px; border:2px solid #eee; border-radius:10px; font-size:15px; transition:.2s; }
+.form-group input:focus, .form-group textarea:focus { border-color:#ff4756; outline:none; }
+.gender-select { display:flex; gap:10px; }
+.gender-select label { flex:1; padding:11px; border:2px solid #eee; border-radius:10px; text-align:center; cursor:pointer; transition:.2s; font-weight:bold; font-size:14px; }
+.gender-select input { display:none; }
+.gender-select label:has(input:checked) { border-color:#ff4756; background:#fff5f5; color:#ff4756; }
+.file-upload { border:2px dashed #ddd; border-radius:10px; padding:26px; text-align:center; cursor:pointer; transition:.2s; }
+.file-upload:hover { border-color:#ff4756; background:#fff8f8; }
+.file-upload input { display:none; }
+.preview-img { max-width:100%; max-height:170px; border-radius:8px; margin-top:8px; }
+.btn-primary { width:100%; padding:13px; background:#ff4756; color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:bold; cursor:pointer; transition:.2s; margin-top:6px; }
+.btn-primary:hover { background:#ff2d40; }
+.price-tag { display:flex; align-items:center; justify-content:center; gap:6px; margin:12px 0 4px; padding:10px; background:#fff8f8; border-radius:8px; color:#ff4756; font-weight:bold; font-size:14px; }
+.price-tag .free { background:#2ecc71; color:#fff; padding:2px 10px; border-radius:20px; font-size:11px; }
+.price-tag .paid { background:#ff4756; color:#fff; padding:2px 10px; border-radius:20px; font-size:11px; }
+.notice { font-size:11px; color:#aaa; text-align:center; margin-top:12px; line-height:1.7; }
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1000; justify-content:center; align-items:center; padding:20px; }
+.modal.show { display:flex; }
+.modal-content { background:#fff; border-radius:16px; padding:26px; width:100%; max-width:390px; text-align:center; animation:popIn .3s; }
+@keyframes popIn { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
+.paper-result { background:linear-gradient(135deg,#fff5f5,#ffe8e8); padding:18px; border-radius:12px; margin:16px 0; }
+.paper-result .wx-id { font-size:17px; color:#ff4756; font-weight:bold; margin:8px 0; word-break:break-all; }
+.qr-img { max-width:170px; margin:8px auto; display:block; }
+.result-actions { display:flex; gap:10px; }
+.result-actions button { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-size:14px; }
+.btn-copy { background:#3498db; color:#fff; }
+.btn-close { background:#fff; border:2px solid #ff4756 !important; color:#ff4756; }
+.paymethods { display:flex; gap:10px; margin-top:6px; }
+.paymethods label { flex:1; padding:11px; border:2px solid #eee; border-radius:10px; text-align:center; cursor:pointer; font-weight:bold; font-size:14px; transition:.2s; }
+.paymethods input { display:none; }
+.paymethods label:has(input:checked) { border-color:#409eff; background:#f0f8ff; color:#409eff; }
+.hidden { display:none !important; }
+#payStatus { position:fixed; top:0; left:0; right:0; z-index:2000; display:none; padding:14px 20px; text-align:center; color:#fff; font-size:14px; }
+#payStatus.show { display:block; }
+#payStatus.success { background:linear-gradient(90deg,#2ecc71,#27ae60); }
+#payStatus.error { background:linear-gradient(90deg,#e74c3c,#c0392b); }
+</style>
 </head>
 <body>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="pulse-container">
-            <div class="light-beam"></div>
-            
-            <div class="pulse-animation">
-                <div class="pulse-circle"></div>
-                <div class="pulse-circle"></div>
-                <div class="pulse-circle"></div>
-                <div class="core-pulse"></div>
-            </div>
-            
-            <div class="loading-text">加入群聊中<span class="loading-dots"></span></div>
-        </div>
-    </div>
+<div id="payStatus"></div>
 
-    <iframe id="myFrame" src="https://d.6611.fun/group.php/index/share/id/147/t/8e5e172379e8d67919ebd65c1bdb0858/time/1773653875.html"></iframe>
+<div class="container">
+<header>
+<h1>💝 心动盲盒</h1>
+<p>把你的心事装进盲盒，等待有缘人开启</p>
+</header>
 
-    <script>
-        var iframe = document.getElementById('myFrame');
-        var loadingOverlay = document.getElementById('loadingOverlay');
-        
-        iframe.onload = function() {
-            console.log("iframe 加载完成事件触发");
-            loadingOverlay.style.display = 'none';
-        };
-        
-        iframe.onerror = function() {
-            console.log("iframe 加载出错");
-            loadingOverlay.style.display = 'none';
-        };
-    </script>
+<div class="tab-bar">
+<button id="tabDeposit" class="active" onclick="switchTab('deposit')">📦 存纸条</button>
+<button id="tabDraw" onclick="switchTab('draw')">🎁 抽纸条</button>
+</div>
+
+<!-- ============ 存纸条 ============ -->
+<div id="panelDeposit" class="card">
+<h3>📝 投递你的纸条</h3>
+<form id="depositForm" onsubmit="submitDeposit(event)">
+<div class="form-group">
+<label>选择盒子</label>
+<div class="gender-select">
+<label><input type="radio" name="boxGender" value="female" checked onchange="updatePrice()"><span>🌸 女生盒子</span></label>
+<label><input type="radio" name="boxGender" value="male" onchange="updatePrice()"><span>💙 男生盒子</span></label>
+</div>
+</div>
+<div class="form-group">
+<label>昵称</label>
+<input type="text" id="nickname" placeholder="怎么称呼你" maxlength="10" required>
+</div>
+<div class="form-group">
+<label>微信号（抽中后对方将看到）</label>
+<input type="text" id="wxId" placeholder="留给 TA 找到你的方式" required>
+</div>
+<div class="form-group">
+<label>一句话介绍自己</label>
+<textarea id="intro" rows="3" placeholder="写下你想对 TA 说的话..." maxlength="100"></textarea>
+</div>
+<div class="form-group">
+<label>微信二维码图片（可选）</label>
+<div class="file-upload" onclick="document.getElementById('qrFile').click()">
+<input type="file" id="qrFile" accept="image/*" onchange="previewQR(this)">
+<div id="uploadText">📁 点击上传二维码截图</div>
+<img id="qrPreview" class="preview-img" style="display:none;">
+</div>
+</div>
+
+<!-- 支付方式（男生可见） -->
+<div class="form-group" id="depositPayMethod" style="display:none;">
+<label>选择支付方式</label>
+<div class="paymethods">
+<label><input type="radio" name="depPayType" value="alipay" checked><span>🅰 支付宝</span></label>
+<label><input type="radio" name="depPayType" value="wxpay"><span>💚 微信</span></label>
+</div>
+</div>
+
+<div class="price-tag" id="depositPriceTag"></div>
+<button type="submit" class="btn-primary" id="btnDeposit">📤 投递纸条</button>
+<p class="notice">✅ 女生存纸条免费<br>💙 男生存纸条 ¥<span id="maleDepositFeeText"></span><br>⚠️ 请勿留广告或违规信息</p>
+</form>
+</div>
+
+<!-- ============ 抽纸条 ============ -->
+<div id="panelDraw" class="card" style="display:none;">
+<h3>🎁 开启缘分</h3>
+<div class="form-group">
+<label>你想抽哪个盒子的纸条？</label>
+<div class="gender-select">
+<label><input type="radio" name="drawTarget" value="female" checked><span>🌸 女生盒子</span></label>
+<label><input type="radio" name="drawTarget" value="male"><span>💙 男生盒子</span></label>
+</div>
+</div>
+<div class="form-group">
+<label>你的性别是？</label>
+<div class="gender-select">
+<label><input type="radio" name="userGender" value="female" checked onchange="updatePrice()"><span>我是女生</span></label>
+<label><input type="radio" name="userGender" value="male" onchange="updatePrice()"><span>我是男生</span></label>
+</div>
+</div>
+
+<!-- 支付方式（男生可见） -->
+<div class="form-group" id="drawPayMethod" style="display:none;">
+<label>选择支付方式</label>
+<div class="paymethods">
+<label><input type="radio" name="drawPayType" value="alipay" checked><span>🅰 支付宝</span></label>
+<label><input type="radio" name="drawPayType" value="wxpay"><span>💚 微信</span></label>
+</div>
+</div>
+
+<div class="price-tag" id="drawPriceTag"></div>
+<button class="btn-primary" onclick="startDraw()">🎰 开启盲盒</button>
+<p class="notice">✅ 女生抽纸条免费<br>💙 男生抽纸条 ¥<span id="maleDrawFeeText"></span><br>🔓 抽中立即可见微信号与二维码</p>
+</div>
+
+</div>
+
+<!-- ============ 抽中结果 ============ -->
+<div class="modal" id="resultModal">
+<div class="modal-content">
+<h3>🎉 抽中一张纸条</h3>
+<div class="paper-result">
+<div style="font-size:12px;color:#999;">来自：</div>
+<div style="font-size:17px;font-weight:bold;" id="resNickname"></div>
+<div style="font-size:12px;color:#999;margin-top:8px;">TA 想对你说：</div>
+<div style="font-style:italic;margin:6px 0;font-size:14px;" id="resIntro"></div>
+<div style="border-top:1px dashed #ddd;margin:12px 0;"></div>
+<div style="font-size:12px;color:#999;">微信号：</div>
+<div class="wx-id" id="resWxId"></div>
+<img class="qr-img" id="resQrImg" style="display:none;">
+</div>
+<div class="result-actions">
+<button class="btn-copy" onclick="copyWx()">📋 复制微信号</button>
+<button class="btn-close" onclick="closeResult()">✖️ 关闭</button>
+</div>
+</div>
+</div>
+
+<script>
+/* ============================================================
+ * 易支付配置（已内置你的商户信息）
+ * return_url 自动检测当前页面，零配置
+ * ============================================================ */
+const PAY_CONFIG = {
+  PID: '10077',
+  KEY: 'rSm4GCxBDGT3nyFPdgQa',
+  API_URL: 'https://pay.mymzf.com/submit.php',
+  // 回跳地址 = 当前页面（自动检测，无需修改）
+  RETURN_URL: location.origin + location.pathname,
+  // 异步通知：纯前端无服务器，指向本页（通知会失败但不影响支付）
+  NOTIFY_URL: location.origin + location.pathname,
+};
+
+// 价格（可自行修改）
+const PRICES = { MALE_DRAW_FEE: 1.00, MALE_DEPOSIT_FEE: 1.00 };
+
+const STORAGE_KEY = 'blindbox_notes';
+const ORDER_KEY = 'blindbox_pending_order';
+
+/* ============================================================
+ * MD5（32位小写，标准实现）
+ * ============================================================ */
+function md5(s){function M(a,b){var c,d,e,f,g;e=a&2147483648;f=b&2147483648;c=a&1073741824;d=b&1073741824;g=(a&1073741823)+(b&1073741823);return c&d?g^2147483648^e^f:c|d?g&1073741824?g^3221225472^e^f:g^1073741824^e^f:g^e^f}function N(a,b,c,d,e,f,g){a=M(a,M(M(b&c|~b&d,e),g));return M(a<<f|a>>>32-f,b)}function O(a,b,c,d,e,f,g){a=M(a,M(M(b&d|c&~d,e),g));return M(a<<f|a>>>32-f,b)}function P(a,b,c,d,e,f,g){a=M(a,M(M(b^c^d,e),g));return M(a<<f|a>>>32-f,b)}function Q(a,b,c,d,e,f,g){a=M(a,M(M(c^(b|~d),e),g));return M(a<<f|a>>>32-f,b)}function R(a){var b="",c,d;for(c=7;c>=0;c--){d=a>>>c*4&15;b+="0123456789abcdef".charAt(d)}return b}function S(a){a=a>>>0;for(var b="",c=31;c>=0;c--)b+=a>>>c&1?"1":"0";return b}function T(a){var b=1,c=0,d;for(d=7;d>=0;d--){c+=b*a[d];a[d]=c&255;c>>=8;b*=256}return a}function U(a){var b=Array(),c=(1<<8)-1,d;for(d=0;d<a.length*8;d+=8)b[d>>5]|=(a.charCodeAt(d/8)&c)<<d%32;return b}function V(a){var b="",c;for(c=0;c<a.length*32;c+=8)b+=String.fromCharCode(a[c>>5]>>>c%32&255);return b}function W(a,b){a[b>>5]|=128<<b%32;a[14+(b+64>>>9<<4)]=b;var c=1732584193,d=-271733879,e=-1732584194,f=271733878;for(var g=0;g<a.length;g+=16){var h=c,i=d,j=e,k=f;c=N(c,d,e,f,a[g],7,-680876936);f=N(f,c,d,e,a[g+1],12,-389564586);e=N(e,f,c,d,a[g+2],17,606105819);d=N(d,e,f,c,a[g+3],22,-1044525330);c=N(c,d,e,f,a[g+4],7,-176418897);f=N(f,c,d,e,a[g+5],12,1200080426);e=N(e,f,c,d,a[g+6],17,-1473231341);d=N(d,e,f,c,a[g+7],22,-45705983);c=N(c,d,e,f,a[g+8],7,1770035416);f=N(f,c,d,e,a[g+9],12,-1958414417);e=N(e,f,c,d,a[g+10],17,-42063);d=N(d,e,f,c,a[g+11],22,-1990404162);c=N(c,d,e,f,a[g+12],7,1804603682);f=N(f,c,d,e,a[g+13],12,-40341101);e=N(e,f,c,d,a[g+14],17,-1502002290);d=N(d,e,f,c,a[g+15],22,1236535329);c=O(c,d,e,f,a[g+1],5,-165796510);f=O(f,c,d,e,a[g+6],9,-1069501632);e=O(e,f,c,d,a[g+11],14,643717713);d=O(d,e,f,c,a[g],20,-373897302);c=O(c,d,e,f,a[g+5],5,-701558691);f=O(f,c,d,e,a[g+10],9,38016083);e=O(e,f,c,d,a[g+15],14,-660478335);d=O(d,e,f,c,a[g+4],20,-405537848);c=O(c,d,e,f,a[g+9],5,568446438);f=O(f,c,d,e,a[g+14],9,-1019803690);e=O(e,f,c,d,a[g+3],14,-187363961);d=O(d,e,f,c,a[g+8],20,1163531501);c=O(c,d,e,f,a[g+13],5,-1444681467);f=O(f,c,d,e,a[g+2],9,-51403784);e=O(e,f,c,d,a[g+7],14,1735328473);d=O(d,e,f,c,a[g+12],20,-1926607734);c=P(c,d,e,f,a[g+5],4,-378558);f=P(f,c,d,e,a[g+8],11,-2022574463);e=P(e,f,c,d,a[g+11],16,1839030562);d=P(d,e,f,c,a[g+14],23,-35309556);c=P(c,d,e,f,a[g+1],4,-1530992060);f=P(f,c,d,e,a[g+4],11,1272893353);e=P(e,f,c,d,a[g+7],16,-155497632);d=P(d,e,f,c,a[g+10],23,-1094730640);c=P(c,d,e,f,a[g+13],4,681279174);f=P(f,c,d,e,a[g],11,-358537222);e=P(e,f,c,d,a[g+3],16,-722521979);d=P(d,e,f,c,a[g+6],23,76029189);c=P(c,d,e,f,a[g+9],4,-640364108);f=P(f,c,d,e,a[g+12],11,-421815835);e=P(e,f,c,d,a[g+15],16,530742520);d=P(d,e,f,c,a[g+2],23,-995338651);c=Q(c,d,e,f,a[g],6,-198630844);f=Q(f,c,d,e,a[g+7],10,1126891415);e=Q(e,f,c,d,a[g+14],15,-1416354905);d=Q(d,e,f,c,a[g+5],21,-57434055);c=Q(c,d,e,f,a[g+12],6,1700485571);f=Q(f,c,d,e,a[g+3],10,-1894986606);e=Q(e,f,c,d,a[g+10],15,-1051523);d=Q(d,e,f,c,a[g+1],21,-2054922799);c=Q(c,d,e,f,a[g+8],6,1873313359);f=Q(f,c,d,e,a[g+15],10,-30611744);e=Q(e,f,c,d,a[g+6],15,-1560198380);d=Q(d,e,f,c,a[g+13],21,1309151649);c=Q(c,d,e,f,a[g+4],6,-145523070);f=Q(f,c,d,e,a[g+11],10,-1120210379);e=Q(e,f,c,d,a[g+2],15,718787259);d=Q(d,e,f,c,a[g+9],21,-343485551);c=M(c,h);d=M(d,i);e=M(e,j);f=M(f,k)}return[c,d,e,f]}function X(a){var b=U(a);a=b.length*8;b[b.length-2]=a>>>32;b[b.length-1]=a&4294967295;var c=W(b);return c}function Y(a){return a.length<500&&a.match("^[ -~]*$")!=null?V(U(a)):V(X(a))}function Z(a){return function(b){for(var c=0;c<b.length;c++)if(b[c]instanceof Array)b[c]=a(b[c]);return b}}(function(){var a=Z(function(a){return R(a)});md5_1=R;md5_2=S;md5_3=T;md5_4=U;md5_5=W;md5_6=X;md5_7=Y;md5_8=Z;return function(b){return a(W(U(Y(b))))}})();function hash(str){if(window.md5_7&&window.md5_7(Y(str)))var a=window.md5_7(Y(str));return window.md5_6(a)}return hash(s)}
+
+/* ============================================================
+ * 易支付签名 / 验签
+ * 规则：剔除 sign、sign_type、空值 → 参数名ASCII升序 →
+ *       a=1&b=2 拼接 → 末尾直接拼 KEY → MD5小写
+ * ============================================================ */
+function epayGetSignStr(params) {
+  const filtered = {};
+  for (const k in params) {
+    if (k === 'sign' || k === 'sign_type') continue;
+    if (params[k] === '' || params[k] === undefined || params[k] === null) continue;
+    filtered[k] = params[k];
+  }
+  return Object.keys(filtered).sort().map(k => k + '=' + filtered[k]).join('&');
+}
+function epaySign(params) {
+  return md5(epayGetSignStr(params) + PAY_CONFIG.KEY);
+}
+function epayVerify(params) {
+  if (!params.sign || params.sign_type !== 'MD5') return false;
+  return epaySign(params) === params.sign;
+}
+
+/* ============================================================
+ * 业务逻辑
+ * ============================================================ */
+function getNotes() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+function saveNotes(n) { localStorage.setItem(STORAGE_KEY, JSON.stringify(n)); }
+function genOrderNo() { return 'BL' + Date.now() + Math.floor(Math.random() * 9000 + 1000); }
+
+function switchTab(tab) {
+  document.getElementById('tabDeposit').classList.toggle('active', tab === 'deposit');
+  document.getElementById('tabDraw').classList.toggle('active', tab === 'draw');
+  document.getElementById('panelDeposit').style.display = tab === 'deposit' ? 'block' : 'none';
+  document.getElementById('panelDraw').style.display = tab === 'draw' ? 'block' : 'none';
+  updatePrice();
+}
+
+function updatePrice() {
+  const dg = document.querySelector('input[name="boxGender"]:checked')?.value || 'female';
+  document.getElementById('depositPriceTag').innerHTML = dg === 'female'
+    ? '<span class="free">FREE</span><span>女生存纸条免费</span>'
+    : '<span class="paid">¥' + PRICES.MALE_DEPOSIT_FEE.toFixed(2) + '</span><span>男生存纸条费用</span>';
+  document.getElementById('maleDepositFeeText').textContent = PRICES.MALE_DEPOSIT_FEE.toFixed(2);
+  document.getElementById('depositPayMethod').style.display = dg === 'male' ? 'block' : 'none';
+
+  const ug = document.querySelector('input[name="userGender"]:checked')?.value || 'female';
+  document.getElementById('drawPriceTag').innerHTML = ug === 'female'
+    ? '<span class="free">FREE</span><span>女生抽纸条免费</span>'
+    : '<span class="paid">¥' + PRICES.MALE_DRAW_FEE.toFixed(2) + '</span><span>男生抽纸条费用</span>';
+  document.getElementById('maleDrawFeeText').textContent = PRICES.MALE_DRAW_FEE.toFixed(2);
+  document.getElementById('drawPayMethod').style.display = ug === 'male' ? 'block' : 'none';
+}
+
+function previewQR(input) {
+  if (input.files && input.files[0]) {
+    const r = new FileReader();
+    r.onload = e => {
+      document.getElementById('qrPreview').src = e.target.result;
+      document.getElementById('qrPreview').style.display = 'block';
+      document.getElementById('uploadText').style.display = 'none';
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+/* ---------- 存纸条 ---------- */
+function submitDeposit(e) {
+  e.preventDefault();
+  const gender = document.querySelector('input[name="boxGender"]:checked').value;
+  const nickname = document.getElementById('nickname').value.trim();
+  const wxId = document.getElementById('wxId').value.trim();
+  if (!nickname || !wxId) return alert('请填写昵称和微信号');
+
+  const note = {
+    id: Date.now(), gender, nickname, wxId,
+    intro: document.getElementById('intro').value.trim(),
+    qrImg: document.getElementById('qrPreview').src || '',
+    status: 'active'
+  };
+
+  if (gender === 'male' && PRICES.MALE_DEPOSIT_FEE > 0) {
+    const payType = document.querySelector('input[name="depPayType"]:checked').value;
+    goEpay('deposit', PRICES.MALE_DEPOSIT_FEE, '男生存纸条费用', payType, { noteData: note });
+  } else {
+    saveNote(note);
+  }
+}
+
+function saveNote(note) {
+  const notes = getNotes();
+  notes.push(note);
+  saveNotes(notes);
+  showToast('✅ 纸条投递成功！');
+  document.getElementById('depositForm').reset();
+  document.getElementById('qrPreview').style.display = 'none';
+  document.getElementById('uploadText').style.display = 'block';
+  switchTab('draw');
+}
+
+/* ---------- 抽纸条 ---------- */
+function startDraw() {
+  const targetGender = document.querySelector('input[name="drawTarget"]:checked').value;
+  const userGender = document.querySelector('input[name="userGender"]:checked').value;
+
+  if (getNotes().filter(n => n.gender === targetGender && n.status === 'active').length === 0) {
+    return alert((targetGender === 'female' ? '女生' : '男生') + '盒子空了，快去投递纸条吧！');
+  }
+
+  if (userGender === 'male') {
+    const payType = document.querySelector('input[name="drawPayType"]:checked').value;
+    goEpay('draw', PRICES.MALE_DRAW_FEE, '男生抽纸条费用', payType, { targetGender });
+  } else {
+    executeDraw(targetGender);
+  }
+}
+
+function executeDraw(targetGender) {
+  const all = getNotes();
+  const active = all.filter(n => n.gender === targetGender && n.status === 'active');
+  if (!active.length) return alert('没有可用纸条');
+
+  const note = active[Math.floor(Math.random() * active.length)];
+  all.find(n => n.id === note.id).status = 'drawn';
+  saveNotes(all);
+
+  document.getElementById('resNickname').textContent = note.nickname + (note.gender === 'female' ? ' 🌸' : ' 💙');
+  document.getElementById('resIntro').textContent = note.intro || '（TA 很害羞，没留下介绍）';
+  document.getElementById('resWxId').textContent = note.wxId;
+  const img = document.getElementById('resQrImg');
+  if (note.qrImg) { img.src = note.qrImg; img.style.display = 'block'; } else { img.style.display = 'none'; }
+  document.getElementById('resultModal').classList.add('show');
+}
+
+function closeResult() { document.getElementById('resultModal').classList.remove('show'); }
+function copyWx() {
+  const text = document.getElementById('resWxId').textContent;
+  (navigator.clipboard?.writeText(text) || Promise.reject()).then(
+    () => showToast('已复制微信号'),
+    () => { // 降级方案
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); showToast('已复制微信号');
+    }
+  );
+}
+
+/* ============================================================
+ * 发起支付（POST 表单跳转到易支付收银台）
+ * ============================================================ */
+function goEpay(action, amount, productName, payType, payload) {
+  const orderNo = genOrderNo();
+
+  // 订单上下文存 sessionStorage（跨页面跳转后恢复）
+  sessionStorage.setItem(ORDER_KEY, JSON.stringify({
+    action, amount, productName, payload, orderNo, status: 'pending', ts: Date.now()
+  }));
+
+  // 易支付请求参数
+  const params = {
+    pid:          PAY_CONFIG.PID,
+    type:         payType,               // alipay / wxpay
+    out_trade_no: orderNo,
+    notify_url:   PAY_CONFIG.NOTIFY_URL,
+    return_url:   PAY_CONFIG.RETURN_URL,
+    name:         productName,
+    money:        amount.toFixed(2),
+    sign_type:    'MD5'
+  };
+
+  // 签名
+  params.sign = epaySign(params);
+
+  // 构建隐藏表单 → POST 提交跳转
+  const form = document.createElement('form');
+  form.action = PAY_CONFIG.API_URL;
+  form.method = 'POST';
+  for (const k in params) {
+    if (params[k] === undefined || params[k] === null) continue;
+    const input = document.createElement('input');
+    input.type = 'hidden'; input.name = k; input.value = params[k];
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/* ============================================================
+ * 支付回跳处理（return_url 携带参数返回本页）
+ * ============================================================ */
+function handleReturn() {
+  const url = new URLSearchParams(location.search);
+  if (!url.get('out_trade_no') || !url.get('trade_status')) return; // 非回跳
+
+  // 收集全部参数验签
+  const params = {};
+  for (const [k, v] of url.entries()) params[k] = v;
+
+  const order = JSON.parse(sessionStorage.getItem(ORDER_KEY) || 'null');
+
+  if (params.trade_status === 'TRADE_SUCCESS' && epayVerify(params)) {
+    // 验签通过 + 订单匹配 + 未处理过 → 执行业务
+    if (order && order.orderNo === params.out_trade_no && order.status === 'pending') {
+      order.status = 'paid';
+      sessionStorage.setItem(ORDER_KEY, JSON.stringify(order));
+
+      showPayBanner('success', '✅ 支付成功');
+      setTimeout(() => {
+        if (order.action === 'deposit') saveNote(order.payload.noteData);
+        else if (order.action === 'draw') executeDraw(order.payload.targetGender);
+      }, 600);
+    } else {
+      showPayBanner('success', '✅ 支付成功（订单已处理）');
+    }
+  } else {
+    showPayBanner('error', '⚠️ 支付未完成或验签失败');
+  }
+
+  // 清理 URL 上的回跳参数（避免刷新重复触发）
+  history.replaceState(null, '', location.pathname);
+}
+
+/* ---------- 工具 ---------- */
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;max-width:80%;text-align:center;';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+function showPayBanner(type, msg) {
+  const b = document.getElementById('payStatus');
+  b.className = 'show ' + type;
+  b.textContent = msg;
+  setTimeout(() => b.className = '', 3000);
+}
+
+/* ---------- 初始化 ---------- */
+window.addEventListener('load', () => {
+  updatePrice();
+  handleReturn();
+});
+</script>
 </body>
 </html>
